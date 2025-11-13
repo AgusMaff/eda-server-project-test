@@ -1,0 +1,20 @@
+---
+- name: "Prueba: Lanzar Demo Job de AWX con un Webhook"
+  hosts: localhost
+  
+  # 1. LA FUENTE:
+  # Usaremos un webhook que escucha en el puerto 5000
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+
+  # 2. LAS REGLAS:
+  rules:
+  - name: Palabra clave 'demo_job' detectada
+    condition: >
+      event.payload.metric_type == "demo_job"
+    action:
+      run_job_template:
+        name: "Demo Job Template"
+        organization: "Default"
