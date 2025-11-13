@@ -1,0 +1,35 @@
+---
+- name: Responder a CPU alto
+  hosts: EDA-Test
+  become: yes
+  
+  tasks:
+    - name: Mostrar información de la alerta
+      debug:
+        msg: 
+          - "ALERTA: CPU alto detectado"
+          - "Host afectado: {{ host_afectado }}"
+          - "Uso de CPU: {{ cpu_usage }}%"
+          - "Timestamp: {{ timestamp }}"
+    
+    - name: Obtener el proceso que más CPU consume
+      shell: ps aux --sort=-%cpu | head -5
+      register: top_cpu_processes
+      
+    - name: Mostrar procesos que más CPU consumen
+      debug:
+        msg: 
+          - "Top 5 procesos que más CPU consumen:"
+          - "{{ top_cpu_processes.stdout_lines }}"
+    
+    - name: Obtener carga del sistema
+      shell: uptime
+      register: system_load
+      
+    - name: Mostrar carga del sistema
+      debug:
+        msg: "Carga del sistema: {{ system_load.stdout }}"
+      
+    - name: Acción completada
+      debug:
+        msg: "✅ Respuesta a alerta de CPU completada"

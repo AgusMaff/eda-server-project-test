@@ -1,0 +1,21 @@
+---
+- name: Vigilar la creación de archivos en un directorio
+  hosts: localhost
+  
+  sources:
+    - name: Observar mi carpeta local
+      ansible.eda.file_watch:
+        path: ./carpeta-vigilada  # La ruta a la carpeta que queremos vigilar
+        recursive: true
+
+  rules:
+    - name: Un archivo fue creado
+      condition: event.change == 'created'
+      action:
+        run_playbook:
+          name: playbooks/saludar.yml
+          extra_vars:
+            # Aquí pasamos la información del evento al playbook
+            ruta_completa: "{{ event.src_path }}"
+            tipo_cambio: "{{ event.change }}"
+            carpeta_vigilada: "{{ event.root_path }}"

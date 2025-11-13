@@ -1,0 +1,74 @@
+---
+- name: Responder a memoria insuficiente
+  hosts: EDA-Test
+  become: yes
+  
+  tasks:
+    - name: Mostrar información de la alerta
+      debug:
+        msg: 
+          - "ALERTA: Memoria insuficiente"
+          - "Host afectado: {{ host_afectado }}"
+          - "Uso de memoria: {{ memory_usage }}%"
+          - "Timestamp: {{ timestamp }}"
+    
+    - name: Mostrar memoria total y disponible
+      shell: free -h
+      register: memory_info
+      
+    - name: Mostrar detalles de memoria
+      debug:
+        msg: 
+          - "Información de memoria:"
+          - "{{ memory_info.stdout_lines }}"
+    
+    - name: Obtener procesos que más memoria consumen
+      shell: ps aux --sort=-%mem | head -10
+      register: top_memory_processes
+      
+    - name: Mostrar procesos que más memoria consumen
+      debug:
+        msg:
+          - "Top 10 procesos que más memoria consumen:"
+          - "{{ top_memory_processes.stdout_lines }}"
+    
+    - name: Verificar uso de swap
+      shell: swapon --show
+      register: swap_info
+      failed_when: false
+      
+    - name: Mostrar información de swap
+      debug:
+        msg:
+          - "Información de swap:"
+          - "{{ swap_info.stdout_lines if swap_info.stdout_lines else 'No hay swap configurado' }}"
+    
+    - name: Limpiar caché del sistema 
+      shell: |
+        sync
+        echo 1 > /proc/sys/vm/drop_caches
+        echo 2 > /proc/sys/vm/drop_caches
+        echo 3 > /proc/sys/vm/drop_caches
+      when: memory_usage >= 90
+      register: cache_cleared
+      
+    - name: Confirmar limpieza de caché
+      debug:
+        msg: "Caché del sistema limpiado"
+      when: cache_cleared is changed
+      
+    - name: Mostrar memoria después de las acciones
+      shell: free -h
+      register: memory_after
+      when: cache_cleared is changed or nginx_restarted is changed
+      
+    - name: Memoria después de las acciones
+      debug:
+        msg:
+          - "Memoria después de las acciones:"
+          - "{{ memory_after.stdout_lines }}"
+      when: cache_cleared is changed or nginx_restarted is changed
+      
+    - name: Acción completada
+      debug:
+        msg: "✅ Respuesta a alerta de memoria completada"
