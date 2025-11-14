@@ -6,7 +6,7 @@
   # Usaremos un webhook que escucha en el puerto 5000
   sources:
     - ansible.eda.webhook:
-        host: 172.173.144.210
+        host: 0.0.0.0
         port: 5000
 
   # 2. LAS REGLAS:
