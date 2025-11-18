@@ -12,5 +12,5 @@
       condition: event.payload.action == "demo_job"
       action:
         run_job_template:
-          name: "Demo Job Template"
-          organization: "Default"
+          name: "Mengo Core"
+          organization: "Mengo Agent"
